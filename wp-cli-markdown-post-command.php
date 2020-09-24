@@ -2,24 +2,25 @@
 /**
  * This file defines three custom commands for WP-CLI to publish and update a post with markdown.
  * A markdown file for a post conatins meta information and content.
- * - wp new <file>, publish a post with a markdonw file specified by file.
+ * - wp new <file> [--force], publish a post with a markdonw file.
+ *   If ID already exist in the file, you have to add --force to republish it.
  * - wp update <file> <ID>, update a post specified by ID with a markdown file specified by file.
  * - wp create <file>, create a empty markdown file with name specified by file.
  *
- * date: 2020-01-29
+ * @author: gloomic <https://github.com/gloomic>
+ * @date: 2020-01-29
  */
 
 function parse_markdown( $file ) {
     $content = file_get_contents( $file );
     $meta = array();
 
-    if ( '---' === substr( $content, 0, 3 ) ) {
+    if ( strncmp( $content, '---', 3 ) === 0 ) {
         $pos = strpos( $content, '---', 3 );
         if ( $pos !== false ) {
-            $yaml = substr( $content, 3, $pos );
-            //$n;
+            $yaml = substr( $content, 3, $pos - 3 );
             $meta = spyc_load( $yaml );
-            $content = substr( $content, $pos + 3);
+            $content = substr( $content, $pos + 3 );
         }
     }
 
@@ -36,16 +37,19 @@ $new_post_command = function( $args, $assoc_args ) {
 
     $file = $args[0];
     if ( ! is_file( $file ) || ! file_exists( $file ) ) {
-        WP_CLI::error( 'The argument is not a file' );
+        WP_CLI::error( 'The specified file does not exist.' );
     }
 
     $post = parse_markdown( $file );
     $meta = $post['meta'];
 
-    // Ignore ID if it exists.
+    // Check whether "--force" option is set if ID exists.
     if ( array_key_exists( 'ID', $meta ) ) {
+        if ( ! array_key_exists( 'force', $assoc_args ) ) {
+            WP_CLI::error( 'ID already exists in the file, you have to add --force option to republish it' );
+        }
+
         unset( $meta['ID'] );
-        WP_CLI::line( 'ID has been existed.' );
     }
 
     // post args
@@ -60,7 +64,6 @@ $new_post_command = function( $args, $assoc_args ) {
         'tags_input',
         'post_excerpt',
         'post_name',
-
     ];
 
     foreach( $arg_keys as $k ) {
