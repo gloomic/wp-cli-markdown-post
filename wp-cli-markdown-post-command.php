@@ -30,6 +30,30 @@ function parse_markdown( $file ) {
     );
 }
 
+/**
+ * Command: new, publish a post with information specified in a markdown file.
+ *          The markdown file contains a YAML part to define the meta data of the post.
+ * Syntax: new [--force] <markdown-file>
+ * Options:
+ *   --force, if the markdown already has an ID, you need to add this option to force
+ *            to republish it. Otherwise, it will fail.
+ * Examples:
+ *   1. $ wp new useful-git-commands.md
+ *   2. $ wp new git/git-getting-started.md
+ * Markdown example YAML part:
+ * ---
+ * post_title: Useful Git commands
+ * post_author: 8
+ * post_type: post
+ * post_name: useful-git-commands
+ * post_status: publish
+ * tags_input:
+ *   - basic
+ * post_category:
+ *   - git
+ * description: Some command used and useful commands will...
+ * ---
+ */
 $new_post_command = function( $args, $assoc_args ) {
     if ( empty( $args ) ) {
         WP_CLI::error( 'The file argument is missing.' );
@@ -127,6 +151,27 @@ $new_post_command = function( $args, $assoc_args ) {
     }
 };
 
+/**
+ * Command: update, update a post's content with post ID and content specified in a markdown file.
+ *          It only update content of a post.
+ * Syntax: update <markdown-file>
+ * Examples:
+ *   1. $ wp update git/useful-git-commands.md # Update a post's content
+ * Markdown example YAML part:
+ * ---
+ * ID: 23
+ * post_title: Useful Git commands
+ * post_author: 3
+ * post_type: post
+ * post_name: useful-git-commands
+ * post_status: publish
+ * tags_input:
+ *   - basic
+ * post_category:
+ *   - git
+ * description: Some command used and useful commands will...
+ * ---
+ */
 $update_post_command = function( $args, $assoc_args ) {
     if ( empty( $args ) ) {
         WP_CLI::error( 'The file argument is missing.' );
@@ -157,6 +202,13 @@ $update_post_command = function( $args, $assoc_args ) {
     }
 };
 
+/**
+ * Command: create, create a markdown file containing supported meta data name.
+ * Syntax: create <file-name-without-file-extension>
+ * Examples:
+ *   1. $ wp create useful-git-commands
+ *      Success: useful-git-commands.md is created!
+ */
 $create_markdown_command = function ( $args, $assoc_args ) {
     if ( empty( $args ) ) {
         WP_CLI::error( 'No file name' );
