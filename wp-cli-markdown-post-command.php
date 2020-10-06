@@ -2,10 +2,10 @@
 /**
  * This file defines three custom commands for WP-CLI to publish and update a post with markdown.
  * A markdown file for a post conatins meta information and content.
- * - wp new <file> [--force], publish a post with a markdonw file.
+ * - wp create <file> [--force], publish a post with a markdonw file.
  *   If ID already exist in the file, you have to add --force to republish it.
  * - wp update <file> <ID>, update a post specified by ID with a markdown file specified by file.
- * - wp create <file>, create a empty markdown file with name specified by file.
+ * - wp new <file>, new a markdown file with name specified by file.
  *
  * @author: gloomic <https://github.com/gloomic>
  * @date: 2020-01-29
@@ -31,15 +31,15 @@ function parse_markdown( $file ) {
 }
 
 /**
- * Command: new, publish a post with information specified in a markdown file.
+ * Command: create, publish a post with information specified in a markdown file.
  *          The markdown file contains a YAML part to define the meta data of the post.
- * Syntax: new [--force] <markdown-file>
+ * Syntax: create [--force] <markdown-file>
  * Options:
  *   --force, if the markdown already has an ID, you need to add this option to force
  *            to republish it. Otherwise, it will fail.
  * Examples:
- *   1. $ wp new useful-git-commands.md
- *   2. $ wp new git/git-getting-started.md
+ *   1. $ wp create useful-git-commands.md
+ *   2. $ wp create git/git-getting-started.md
  * Markdown example YAML part:
  * ---
  * post_title: Useful Git commands
@@ -54,7 +54,7 @@ function parse_markdown( $file ) {
  * description: Some command used and useful commands will...
  * ---
  */
-$new_post_command = function( $args, $assoc_args ) {
+$create_post_command = function( $args, $assoc_args ) {
     if ( empty( $args ) ) {
         WP_CLI::error( 'The file argument is missing.' );
     }
@@ -81,13 +81,13 @@ $new_post_command = function( $args, $assoc_args ) {
        'post_content' => $post['content']
     );
     $arg_keys = [
+        'post_title',
+        'post_name',
+        'post_author',
         'post_type',
         'post_status',
-        'post_title',
-        'post_author',
         'tags_input',
         'post_excerpt',
-        'post_name',
     ];
 
     foreach( $arg_keys as $k ) {
@@ -161,9 +161,9 @@ $new_post_command = function( $args, $assoc_args ) {
  * ---
  * ID: 23
  * post_title: Useful Git commands
+ * post_name: useful-git-commands
  * post_author: 3
  * post_type: post
- * post_name: useful-git-commands
  * post_status: publish
  * tags_input:
  *   - basic
@@ -203,13 +203,13 @@ $update_post_command = function( $args, $assoc_args ) {
 };
 
 /**
- * Command: create, create a markdown file containing supported meta data name.
- * Syntax: create <file-name-without-file-extension>
+ * Command: new, new a markdown file containing supported meta data name.
+ * Syntax: new <file-name-without-file-extension>
  * Examples:
- *   1. $ wp create useful-git-commands
+ *   1. $ wp new useful-git-commands
  *      Success: useful-git-commands.md is created!
  */
-$create_markdown_command = function ( $args, $assoc_args ) {
+$new_markdown_command = function ( $args, $assoc_args ) {
     if ( empty( $args ) ) {
         WP_CLI::error( 'No file name' );
     }
@@ -223,6 +223,7 @@ $create_markdown_command = function ( $args, $assoc_args ) {
     $meta = [
         '---',
         'post_title: ',
+        'post-name: '
         'post_author: ',
         'post_type: post',
         'post_status: publish',
@@ -245,6 +246,6 @@ $create_markdown_command = function ( $args, $assoc_args ) {
     }
 };
 
-WP_CLI::add_command( 'new', $new_post_command );
+WP_CLI::add_command( 'create', $create_post_command );
 WP_CLI::add_command( 'update', $update_post_command );
-WP_CLI::add_command( 'create', $create_markdown_command );
+WP_CLI::add_command( 'new', $new_markdown_command );
