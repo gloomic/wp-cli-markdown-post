@@ -86,6 +86,8 @@ $create_post_command = function( $args, $assoc_args ) {
         'post_author',
         'post_type',
         'post_status',
+        'post_date',
+        // 'post_modified', // 'post_modified' field won't be used in wp_new_post().
         'tags_input',
         'post_excerpt',
     ];
@@ -147,6 +149,27 @@ $create_post_command = function( $args, $assoc_args ) {
     if ( is_wp_error( $post_id ) ) {
         WP_CLI::error( $post_id );
     } else {
+        // Update markdown with ID and post_date.
+
+        $meta;
+        // Add or update ID
+        if ( ! array_key_exists( 'ID', $post['meta'] ) ) {
+            $meta = array_merge( array( 'ID' => $post_id ), $post['meta'] );
+        } else {
+            $meta = $post['meta'];
+            $meta['ID'] = $post_id;
+        }
+
+        // Add post_date if it does not exist yet.
+        if ( ! array_key_exists( 'post_date', $meta ) ) {
+            $post_obj = get_post(  $post_id );
+            $meta['post_date'] = $post_obj->post_date;
+        }
+
+        $content = '---' . PHP_EOL . spyc_dump( $meta ) . '---' . PHP_EOL . PHP_EOL
+            . $post['content'] . PHP_EOL; // Use original content.
+        file_put_contents( $file, $content );
+
         WP_CLI::success( $post_id );
     }
 };
@@ -227,6 +250,8 @@ $new_markdown_command = function ( $args, $assoc_args ) {
         'post_author: ',
         'post_type: post',
         'post_status: publish',
+        'post_date: ' .  date( "Y-m-d H:i:s" ),
+        'post_modified: ' . date( "Y-m-d H:i:s" ),
         'tags_input:',
         '  - ',
         'post_category: ',
