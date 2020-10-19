@@ -68,9 +68,9 @@ $create_post_command = function( $args, $assoc_args ) {
     $meta = $post['meta'];
 
     // Check whether "--force" option is set if ID exists.
-    if ( array_key_exists( 'ID', $meta ) ) {
+    if ( isset( $meta['ID'] ) ) {
         if ( ! array_key_exists( 'force', $assoc_args ) ) {
-            WP_CLI::error( 'ID already exists in the file, you have to add --force option to republish it' );
+            WP_CLI::error( 'ID already exists in the file, you have to add --force option to republish it.' );
         }
 
         unset( $meta['ID'] );
@@ -93,15 +93,15 @@ $create_post_command = function( $args, $assoc_args ) {
     ];
 
     foreach( $arg_keys as $k ) {
-        if ( array_key_exists( $k, $meta ) ) {
+        if ( isset( $meta[$k] ) ) {
             $args[$k] = $meta[$k];
             unset( $meta[$k] );
         }
     }
 
-    if ( array_key_exists( 'post_category', $meta ) ) {
+    if ( isset( $meta['post_category'] ) ) {
         $categories = $meta['post_category'];
-        if ( !is_array( $categories ) ) {
+        if ( ! is_array( $categories ) ) {
             $categories = array( $categories );
         }
         $terms = get_terms( array(
@@ -112,12 +112,12 @@ $create_post_command = function( $args, $assoc_args ) {
             )
         );
         $map = array();
-        foreach ($categories as $name) {
+        foreach ( $categories as $name ) {
             $map[$name] = 1;
         }
 
         $ids = array();
-        if ( !empty( $terms ) ) {
+        if ( ! empty( $terms ) ) {
             foreach ( $terms as $id => $name ) {
                 $ids[] = $id;
                 unset( $map[$name] );
@@ -125,8 +125,8 @@ $create_post_command = function( $args, $assoc_args ) {
         }
 
         // create new categroy if it does not exist
-        if ( !empty( $map ) ) {
-            foreach ($map as $name => $value) {
+        if ( ! empty( $map ) ) {
+            foreach ( $map as $name => $value ) {
                 $term = wp_insert_term( $name, 'category', array( 'parent' => 0 ) );
                 $ids[] = $term['term_id'];
             }
@@ -136,16 +136,17 @@ $create_post_command = function( $args, $assoc_args ) {
         unset( $meta['post_category'] );
     }
 
-    // post meta
-
-    if ( array_key_exists( 'description', $meta ) ) {
+    // yoast description
+    if ( isset( $meta['description'] ) ) {
         $meta['_yoast_wpseo_metadesc'] = $meta['description'];
         unset( $meta['description'] );
+
+        // Only update meta like yoast description.
+        $args['meta_input'] = ['_yoast_wpseo_metadesc' => $meta['_yoast_wpseo_metadesc']];
     }
 
-    $args['meta_input'] = $meta;
+    //$args['meta_input'] = $meta; // Don't set other meta anymore except yoast description.
     $post_id = wp_insert_post( $args, true );
-
     if ( is_wp_error( $post_id ) ) {
         WP_CLI::error( $post_id );
     } else {
@@ -154,14 +155,14 @@ $create_post_command = function( $args, $assoc_args ) {
         $meta;
         // Add or update ID
         if ( ! array_key_exists( 'ID', $post['meta'] ) ) {
-            $meta = array_merge( array( 'ID' => $post_id ), $post['meta'] );
+            $meta = array_merge( array( 'ID' => $post_id ), $post['meta'] ); // Put ID in the beginning.
         } else {
             $meta = $post['meta'];
             $meta['ID'] = $post_id;
         }
 
         // Add post_date if it does not exist yet.
-        if ( ! array_key_exists( 'post_date', $meta ) ) {
+        if ( empty( $meta['post_date'] ) ) {
             $post_obj = get_post(  $post_id );
             $meta['post_date'] = $post_obj->post_date;
         }
@@ -211,9 +212,10 @@ $update_post_command = function( $args, $assoc_args ) {
     $args = array (
        'post_content' => $post['content']
     );
+
     $meta = $post['meta'];
-    if ( ! array_key_exists( 'ID', $meta ) ) {
-        WP_CLI::error( 'ID does not exist in the file.' );
+    if ( empty( $meta['ID'] ) ) {
+        WP_CLI::error( 'ID does not exist or not set in the file.' );
     }
     $args['ID'] = $meta['ID'];
     $post_id = wp_update_post( $args, true );
@@ -234,7 +236,7 @@ $update_post_command = function( $args, $assoc_args ) {
  */
 $new_markdown_command = function ( $args, $assoc_args ) {
     if ( empty( $args ) ) {
-        WP_CLI::error( 'No file name' );
+        WP_CLI::error( 'No file name.' );
     }
 
     $file_name = $args[0];
@@ -246,12 +248,11 @@ $new_markdown_command = function ( $args, $assoc_args ) {
     $meta = [
         '---',
         'post_title: ',
-        'post-name: '
         'post_author: ',
         'post_type: post',
         'post_status: publish',
         'post_date: ' .  date( "Y-m-d H:i:s" ),
-        'post_modified: ' . date( "Y-m-d H:i:s" ),
+        //'post_modified: ' . date( "Y-m-d H:i:s" ),
         'tags_input:',
         '  - ',
         'post_category: ',
