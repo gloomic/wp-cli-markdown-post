@@ -218,8 +218,13 @@ $update_post_command = function( $args, $assoc_args ) {
         WP_CLI::error( 'ID does not exist or not set in the file.' );
     }
     $args['ID'] = $meta['ID'];
-    $post_id = wp_update_post( $args, true );
 
+    // Update yoast description if it is set.
+    if ( ! empty( $meta['description'] ) ) {
+        $args['meta_input'] = ['_yoast_wpseo_metadesc' => $meta['description']];
+    }
+
+    $post_id = wp_update_post( $args, true );
     if ( is_wp_error( $post_id ) ) {
         WP_CLI::error( $post_id );
     } else {
