@@ -101,13 +101,37 @@ post_name:
 post_author:
 post_type: post
 post_status: publish
+post_date: 2021-03-31 06:34:21
+post_modified: 2021-03-31 06:34:21
 tags_input:
   -
 post_category:
-  - git
+  -
 description:
 ---
 
+```
+
+A full example of a post markdown file:
+
+```markdown
+---
+post_title: Useful Git commands with examples
+post_author: 358
+post_type: post
+post_status: publish
+post_date: 2021-03-31 06:34:21
+post_modified: 2021-03-31 06:34:21
+tags_input:
+  - basic
+post_category:
+  - git
+description: "Some useful git commands which cover most of the usage scenarios."
+---
+
+Here are some useful commands with examples. These commands cover most of the usage scenarios in your daily use of git. With them, your experience with git will becomes much more easier.
+
+The second paragraph ...
 ```
 
 ### create
@@ -127,7 +151,18 @@ $ create --force <markdown-file>
 
 ```shell
 $ wp create useful-git-commands.md
+Success: 256
+
 $ wp create git/git-getting-started.md
+Success: 257
+```
+
+This command will update the post and update the markdown file by adding an ID to it:
+
+```markdown
+---
+ID: 256
+post_title: Useful Git commands with examples
 ```
 
 ### update
@@ -167,6 +202,10 @@ The `git/useful-git-commands.md` file may looks like this:
 
  In this post, ...
 ```
+
+> **Note:**
+>
+> It must contain the `ID` meta data of the post.
 
 ## Authors
 
